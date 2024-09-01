@@ -1960,6 +1960,7 @@ state    real  CAPG             ij      misc        1         -      r        "C
 state    real  THC              ij      misc        1         -      r        "THC"                   "THERMAL INERTIA"                              "Cal cm-2 K-1 s-0.5"      
 state    real  HFX              ij      misc        1         -      rh       "HFX"                   "UPWARD HEAT FLUX AT THE SURFACE"              "W m-2"      
 state    real  QFX              ij      misc        1         -      rh       "QFX"                   "UPWARD MOISTURE FLUX AT THE SURFACE"          "kg m-2 s-1"      
+state    real  AHFLUX           ij      misc        1         -      rh       "AHFLUX"                   "AHFLUX"              "W m-2" #yun note: added by LUCY
 state    real  LH               ij      misc        1         -      rh       "LH"                    "LATENT HEAT FLUX AT THE SURFACE"              "W m-2"
 state    real  ACHFX            ij      misc        1         -      rhdu     "ACHFX"                 "ACCUMULATED UPWARD HEAT FLUX AT THE SURFACE"  "J m-2"
 #BSINGH - Added WSTAR for CuP scheme
@@ -2452,6 +2453,19 @@ rconfig   integer     ra_sw_eclipse       namelist,physics	1              0     
 rconfig   integer     ghg_input           namelist,physics	1              1       rh       "ghg_input"             "for CAM, RRTM, RRTMG, RRTMG_fast: 0/1 flag: 0=constant (CO2 is a function of year for RRTM*); 1=time-varying GHG from CAMtr climate file"
 rconfig   real    radt                    namelist,physics	max_domains    0       h    "RADT"          ""      ""
 rconfig   real    naer                    namelist,physics      max_domains    1e9     rh   "NAER"          ""      ""
+
+#++ yun note: added by LUCY, start
+rconfig   integer   AH_choose             namelist,dynamics   max_domains    0       rh    "AH_choose"              "AH_choose"      ""
+rconfig   real      AHratio               namelist,dynamics   max_domains    1.0     rh    "AHratio"              "AHratio"      ""
+rconfig   real      AH_istart             namelist,dynamics   max_domains    1.0     rh    "AH_istart"            "AH_istart"      ""
+rconfig   real      AH_jstart             namelist,dynamics   max_domains    1.0     rh    "AH_jstart"            "AH_jstart"      ""
+rconfig   real      AH_iend               namelist,dynamics   max_domains    1.0     rh    "AH_iend"              "AH_iend"      ""
+rconfig   real      AH_jend               namelist,dynamics   max_domains    1.0     rh    "AH_jend"              "AH_jend"      ""
+rconfig   real      AH_grid               namelist,dynamics   max_domains    1.0     rh    "AH_grid"              "AH_grid"      ""
+rconfig   real      AHtest1               namelist,dynamics   max_domains    1.0     rh    "AHtest1"              "AHtest1"      ""
+rconfig   real      AHtest2               namelist,dynamics   max_domains    1.0     rh    "AHtest2"              "AHtest2"      ""
+##-- yun note: added by LUCY, end
+
 rconfig   integer     sf_sfclay_physics   namelist,physics	max_domains    -1      rh       "sf_sfclay_physics"             ""      ""
 # IRRIGATION
 rconfig   integer     sf_surf_irr_scheme  namelist,physics      max_domains    0       rh       "sf_surf_irr_scheme"   "ARI: 0=no irr; 1=drip; 2=sprinkler; 3=channel" ""

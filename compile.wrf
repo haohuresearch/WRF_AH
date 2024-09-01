@@ -1,0 +1,19 @@
+==========================================
+SLURM_JOB_ID = 25146409
+SLURM_JOB_NODELIST = b05-08
+TMPDIR = /tmp/SLURM_25146409
+==========================================
+
+Currently Loaded Modules:
+  1) gcc/11.3.0        6) netcdf-combined/4.8.1   11) hdf5/1.12.2
+  2) openblas/0.3.21   7) parallel-netcdf/1.12.2  12) flex/2.6.4
+  3) openmpi/4.1.4     8) zlib/1.2.12             13) time/1.9
+  4) pmix/3.2.3        9) libpng/1.6.37
+  5) usc/11.3.0       10) jasper/1.900.1
+
+ 
+
+
+real	56m36.236s
+user	0m0.063s
+sys	0m0.101s

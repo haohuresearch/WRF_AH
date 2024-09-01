@@ -10,7 +10,9 @@ CONTAINS
      &           acgrdflx,achfx,aclhf                                 &
      &          ,acsnom,acsnow,snowfallac,akhs,akms,albedo,br,canwat  &
      &          ,chklowq,dt,dx,dx2d,area2d,dz8w,dzs,glw               &
-     &          ,grdflx,gsw,swdown,gz1oz0,hfx,ht,ifsnow,isfflx        &
+     &          ,grdflx,gsw,swdown,gz1oz0,hfx                         &
+     &          ,AH_istart,AH_jstart,AH_iend,AH_jend,AH_grid,AHFLUX   & !yun note: added by LUCY     
+     &          ,ht,ifsnow,isfflx                                     &
      &          ,fractional_seaice,seaice_albedo_opt                  &
      &          ,seaice_albedo_default,seaice_thickness_opt,          &
      &          seaice_thickness_default                              &
@@ -701,7 +703,14 @@ CONTAINS
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   CANWAT
 
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   GRDFLX
-   REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   HFX
+
+   REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   HFX,AHFLUX !yun note: changed by LUCY
+   INTEGER,                             INTENT(IN   ) ::   AH_istart !yun note: added by LUCY
+   INTEGER,                             INTENT(IN   ) ::   AH_jstart !yun note: added by LUCY
+   INTEGER,                             INTENT(IN   ) ::   AH_iend !yun note: added by LUCY
+   INTEGER,                             INTENT(IN   ) ::   AH_jend !yun note: added by LUCY
+   INTEGER,                             INTENT(IN   ) ::   AH_grid !yun note: added by LUCY
+
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   RMOL
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   PBLH
    REAL, DIMENSION( ims:ime, jms:jme ) , INTENT(INOUT)::   Q2
@@ -2817,7 +2826,9 @@ CONTAINS
                end if
 
                CALL lsm(dz8w,qv_curr,p8w,t_phy,tsk,                 &
-                hfx,qfx,lh,grdflx,qgh,gsw,swdown,swddir,swddif,     &
+                hfx,                                                &
+                AH_istart,AH_jstart,AH_iend,AH_jend,AH_grid,AHFLUX, & !yun note: added by LUCY
+                qfx,lh,grdflx,qgh,gsw,swdown,swddir,swddif,     &
                 glw,smstav,smstot,    &
                 sfcrunoff,udrunoff,ivgtyp,isltyp,isurban,isice,vegfra,        &
                 albedo,albbck,znt,z0, tmn,xland,xice,emiss, embck,    &

@@ -303,7 +303,7 @@ USE module_model_constants, ONLY :  piconst
 !
 !===============================================================================
 
-   SUBROUTINE urban(LSOLAR,                                           & ! L
+   SUBROUTINE urban(LSOLAR,AHhuang, AHratio,                          & ! L !yun note: changed by LUCY
                     num_roof_layers,num_wall_layers,num_road_layers,  & ! I
                     DZR,DZB,DZG,                                      & ! I
                     UTYPE,TA,QA,UA,U1,V1,SSG,SSGD,SSGQ,LLG,RAIN,RHOO, & ! I
@@ -381,6 +381,8 @@ USE module_model_constants, ONLY :  piconst
    REAL, INTENT(IN)    :: XLAT ! latitude                               [deg]
    REAL, INTENT(IN)    :: DELT ! time step                              [s]
    REAL, INTENT(IN)    :: CHS,CHS2 ! CH*U at za and 2 m             [m/s]
+
+   REAL, INTENT(IN)    :: AHhuang, AHratio  !yun note: added by LUCY
 
    REAL, INTENT(INOUT) :: SSGD ! downward direct short wave radiation   [W/m/m]
    REAL, INTENT(INOUT) :: SSGQ ! downward diffuse short wave radiation  [W/m/m]
@@ -791,8 +793,11 @@ USE module_model_constants, ONLY :  piconst
  !End NUDAPT Modification
 
 
+! Huang, 2007/01/17, cal. ah
+   if(ahoption==1) AH=AHhuang*AHratio !yun note: changed by LUCY
+
 ! Miao, 2007/01/17, cal. ah
-   if(ahoption==1) AH=AH*ahdiuprf(tloc)
+   !if(ahoption==1) AH=AH*ahdiuprf(tloc) !yun note: comment out by LUCY
 
 ! Yang, 2014/10/08, cal. alh
    Kalh=0
@@ -802,7 +807,8 @@ USE module_model_constants, ONLY :  piconst
      if(jmonth==9 .or. jmonth==10.or. jmonth==11)Kalh=3
      if(jmonth==12.or. jmonth==1 .or. jmonth==2) Kalh=4
    endif
-   if(alhoption==1) ALH = ALH*alhdiuprf(tloc2)*alhseason(Kalh)
+   !if(alhoption==1) ALH = ALH*alhdiuprf(tloc2)*alhseason(Kalh) !yun note: comment out by LUCY
+   if(alhoption==1) ALH = AHhuang*(1-AHratio) !yun note: changed by LUCY
 
    IF (distributed_aerodynamics_option) THEN
      ZDC = 0.
@@ -1537,6 +1543,9 @@ ENDIF
 ! Total Fluxes from Urban Canopy
 !-------------------------------------------------------------------------------
 !===Yang, 2014/10/08, cal. ah. alh. green roof===
+ AH  = AHhuang*AHratio !yun note: added by LUCY
+ ALH = AHhuang*(1-AHratio) !yun note: added by LUCY
+
  if(groption==1) then
    if(ahoption==1) then
      FLXTH  = ((1.-FGR)*R*FLXTHR + FGR*R*FLXTHGR + W*FLXTHB + RW*FLXTHG)+ AH/RHOO/CPP

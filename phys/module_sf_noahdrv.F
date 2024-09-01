@@ -36,7 +36,7 @@ CONTAINS
 ! Urban related variable are added to arguments - urban
 !----------------------------------------------------------------
    SUBROUTINE lsm(DZ8W,QV3D,P8W3D,T3D,TSK,                      &
-                  HFX,QFX,LH,GRDFLX, QGH,GSW,SWDOWN,SWDDIR,SWDDIF,&
+                  HFX,AH_istart,AH_jstart,AH_iend,AH_jend,AH_grid,AHFLUX,QFX,LH,GRDFLX, QGH,GSW,SWDOWN,SWDDIR,SWDDIF,&  !yun note: changed by LUCY
                   GLW,SMSTAV,SMSTOT, &
                   SFCRUNOFF, UDRUNOFF,IVGTYP,ISLTYP,ISURBAN,ISICE,VEGFRA,    &
                   ALBEDO,ALBBCK,ZNT,Z0,TMN,XLAND,XICE,EMISS,EMBCK,   &
@@ -126,6 +126,8 @@ CONTAINS
                  )
 
 !----------------------------------------------------------------
+    USE module_configure,  only: grid_config_rec_type !yun note: added by LUCY
+
     IMPLICIT NONE
 !----------------------------------------------------------------
 !----------------------------------------------------------------
@@ -334,9 +336,16 @@ CONTAINS
    REAL,     DIMENSION( ims:ime , 1:num_soil_layers, jms:jme ), &
              INTENT(OUT)     ::                         SMCREL
 
+   INTEGER, INTENT(IN)       ::     AH_istart  !yun note: added by LUCY
+   INTEGER, INTENT(IN)       ::     AH_jstart  !yun note: added by LUCY
+   INTEGER, INTENT(IN)       ::     AH_iend    !yun note: added by LUCY
+   INTEGER, INTENT(IN)       ::     AH_jend    !yun note: added by LUCY
+   INTEGER, INTENT(IN)       ::     AH_grid    !yun note: added by LUCY
+
    REAL,    DIMENSION( ims:ime, jms:jme )                     , &
             INTENT(INOUT)    ::                            TSK, & !was TGB (temperature)
                                                            HFX, &
+                                                           AHFLUX,& !yun note: added by LUCY
                                                            QFX, &
                                                             LH, &
                                                         GRDFLX, &
@@ -715,6 +724,82 @@ CONTAINS
 
    REAL,OPTIONAL,INTENT(IN),DIMENSION( ims:ime, jms:jme )       :: IRR_CHAN
    REAL       ::  IRRIGATION_CHANNEL
+
+!++ yun note: added by LUCY, start
+!Local
+  integer   :: xmax, ymax,itf,jtf
+  INTEGER   :: AH_choose
+  real      :: AHratio,AHhuang
+  real, allocatable :: Renfluxin(:,:)
+
+
+  ! local varibal
+  integer   ::Fluxsteps,trace_times,timeth,hourmod
+  character(len=4) :: nameth,addpp
+  character(len=4) filename
+  !tracer_time=desired_spin-up_time(in seconds)/time_step(in seconds)
+
+!Yun Li :20220919+
+  !huangbei
+! CALL nl_get_AH_choose ( 1, AH_choose )
+! CALL nl_get_AHratio ( 1, AHratio )
+  CALL nl_get_AH_choose ( AH_grid, AH_choose )
+  CALL nl_get_AHratio ( AH_grid, AHratio )
+!Yun Li :20220919-
+
+
+  print*,'ITIMESTEP',ITIMESTEP
+     trace_times = 3600
+     addpp ='flux'
+     Fluxsteps=trace_times/dt
+     hourmod=Mod(ITIMESTEP,Fluxsteps)
+ 
+!Yun Li :20220919+
+ write(0,*) "Yun added in LUCY, AH_grid=",AH_grid,", AH_choose=",AH_choose,", hourmod=",hourmod
+!Yun Li :20220919-
+
+   IF( AH_grid  .eq. 3 )THEN
+     IF( AH_choose .eq. 1 )THEN
+
+       IF( hourmod .eq. 1 )THEN  !.or. ITIMESTEP .eq. 1
+        write(0,*) "Yun added in LUCY, in IF statement"
+        timeth=INT(ITIMESTEP/Fluxsteps)
+        write(0,*) "Yun added in LUCY, timeth:",timeth
+        print*,'timeth',timeth
+
+        write(nameth,"(I4.4)") timeth
+        filename = trim(nameth)
+        write(0,*) "Yun added in LUCY, nameth: ",nameth,", filename: ",filename
+        print*,'nameth,filename:',nameth,filename
+        call Readflux( filename,xmax,ymax,Renfluxin )
+        write(0,*) "Yun added in LUCY, passed01",xmax,ymax,Renfluxin(1,1)
+
+
+        !IF( xmax == min(jde-1,jte) .and. ymax==min(ide-1,ite) ) THEN
+        ! print*, 'Yes! the matrix size of input_flux is same with WRFijk'
+        !ELSE
+        ! print*, 'Warning,Please check the flux in file! the matrix size  is different with WRFijk'
+        !ENDIF
+
+        itf=min0(ite,ide-1)
+        jtf=min0(jte,jde-1)
+
+        do i = its,itf
+           do j = jts,jtf
+            AHFLUX(I,J)=Renfluxin(J,I)
+          end do
+        end do
+        write(0,*) "Yun added in LUCY, passed02",AHFLUX(its,jts)
+       ENDIF
+     ENDIF
+   ENDIF
+!-- yun note: added by LUCY, end
+
+        write(0,*) "Yun added in LUCY, passed03"
+
+
+
+
    IRRIGATION_CHANNEL =0.0
    HFX_PHY = 0.0   ! initialize
    QFX_PHY = 0.0
@@ -1429,8 +1514,21 @@ CONTAINS
             vegfrac = vegfra(I, J) / 100
 !
 ! Call urban
+
+!++ yun note: added by LUCY, start
+            !
+            IF( AH_grid  .eq. 3 )THEN
+            !    AHhuang = 50
+                AHhuang = AHFLUX(I,J)
+            ELSE
+                AHhuang = 0.0
+            ENDIF
+
+            ! AHhuang = 0.0
+!-- yun note: added by LUCY, end
+
             CALL cal_mon_day(julian,julyr,jmonth,jday)
-            CALL urban(LSOLAR_URB,                                      & ! I
+            CALL urban(LSOLAR_URB,AHhuang,AHratio,                      & ! I !yun note: changed by LUCY
                        num_roof_layers,num_wall_layers,num_road_layers, & ! C
                        DZR,DZB,DZG,                                     & ! C
                        UTYPE_URB,TA_URB,QA_URB,UA_URB,U1_URB,V1_URB,SSG_URB, & ! I
@@ -1573,6 +1671,18 @@ CONTAINS
 !--------------------------------------
 ! Urban Part End - urban
 !--------------------------------------
+
+!++yun note: added by LUCY, start
+!huangbei  AH_choose=1 in namelist this is useless
+       IF( AH_grid .eq. 3 )THEN
+         IF( AH_choose .eq. 2 )THEN
+            AHFLUX(I,J) = 50
+            print*,'SHOW THIS IF ADD AH 50'
+            HFX(I,J) = HFX(I,J) +  AHFLUX(I,J)*AHratio        ![W/m/m]
+            QFX(I,J) = QFX(I,J) +  AHFLUX(I,J)*(1.0-AHratio)
+         ENDIF
+       ENDIF
+!--yun note: added by LUCY, end
 
 !***  DIAGNOSTICS
           SMSTAV(I,J)=SOILW
@@ -1778,6 +1888,24 @@ CONTAINS
 !------------------------------------------------------
    END SUBROUTINE lsm
 !------------------------------------------------------
+
+!++ yun note: added by LUCY, start
+subroutine Readflux(filename, xmax,ymax,tskinput )
+         implicit none
+         character(len=4) filename
+         integer  xmax, ymax, i,j
+         real, allocatable :: tskinput(:,:)
+         ! input sounding data
+         open(unit=101,file=filename,form='formatted',status='old')
+         rewind(101)
+         read(101,*) xmax, ymax
+         allocate(tskinput(xmax,ymax))
+         do i=1,xmax
+         read(101,*) tskinput(i,:)
+         end do
+         close(101)
+end subroutine Readflux
+!-- yun note: added by LUCY, end
 
 !For MPAS, the below section of the module is moved to module_physics_lsm_noahinit.F in
 !./../core_physics to accomodate differences in the mpi calls between WRF and MPAS.I thought
@@ -3086,6 +3214,7 @@ SUBROUTINE lsm_mosaic(DZ8W,QV3D,P8W3D,T3D,TSK,                      &
    REAL                    ::  HCPCT_FASDAS
    REAL,OPTIONAL,DIMENSION( ims:ime, jms:jme ) :: IRR_CHAN
    REAL               :: IRRIGATION_CHANNEL 
+   REAL      :: AHratio,AHhuang !yun note: added by LUCY, need to initialize bf use? 
    IRRIGATION_CHANNEL=0.0
    HFX_PHY = 0.0   ! initialize
    QFX_PHY = 0.0
@@ -3885,8 +4014,11 @@ SUBROUTINE lsm_mosaic(DZ8W,QV3D,P8W3D,T3D,TSK,                      &
                   vegfrac = vegfra(I, J) / 100.
       !
       ! Call urban
+   !yun added based on LUCY for compiling
+   AHhuang = 0.0
+   AHratio = 0.0
                   CALL cal_mon_day(julian,julyr,jmonth,jday)      
-                  CALL urban(LSOLAR_URB,                                      & ! I
+                  CALL urban(LSOLAR_URB,AHhuang,AHratio,                      & ! I !yun note: changed by LUCY
                              num_roof_layers,num_wall_layers,num_road_layers, & ! C
                              DZR,DZB,DZG,                                     & ! C
                              UTYPE_URB,TA_URB,QA_URB,UA_URB,U1_URB,V1_URB,SSG_URB, & ! I
@@ -4765,8 +4897,11 @@ SUBROUTINE lsm_mosaic(DZ8W,QV3D,P8W3D,T3D,TSK,                      &
 
       !
       ! Call urban
+   !yun added based on LUCY, for compiling
+    AHhuang = 0.0
+    AHratio = 0.0
                   CALL cal_mon_day(julian,julyr,jmonth,jday)        
-                  CALL urban(LSOLAR_URB,                                      & ! I
+                  CALL urban(LSOLAR_URB,AHhuang,AHratio,                      & ! I !yun note: changed by LUCY
                              num_roof_layers,num_wall_layers,num_road_layers, & ! C
                              DZR,DZB,DZG,                                     & ! C
                              UTYPE_URB,TA_URB,QA_URB,UA_URB,U1_URB,V1_URB,SSG_URB, & ! I

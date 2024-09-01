@@ -59349,7 +59349,7 @@ CONTAINS
  real :: lf_urb_s
  real :: z0_urb
  real :: vegfrac
-
+ real :: AHhuang, AHratio  !yun note: added by LUCY
  logical, external :: wrf_dm_on_monitor
  
 ! ----------------------------------------------------------------------
@@ -60329,10 +60329,14 @@ has_urban_physics : &
 !
 
 ! Call urban
+! for ah huangbei !yun note: added by LUCY
+            AHhuang = 0. !yun note: added by LUCY
+            AHratio = 0. !yun note: added by LUCY
 !sw++
             CALL cal_mon_day(julday,julyr,jmonth,jday)
 !sw--
             CALL urban(LSOLAR_URB,                                      & ! I
+                       AHhuang, AHratio,                                & ! I !yun note: added by LUCY
                        num_roof_layers,num_wall_layers,num_road_layers, & ! C
                        DZR,DZB,DZG,                                     & ! C
                        UTYPE_URB,TA_URB,QA_URB,UA_URB,U1_URB,V1_URB,SSG_URB, & ! I

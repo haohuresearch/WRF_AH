@@ -605,6 +605,15 @@ BENCH_START(surf_driver_tim)
      &        ,FM=grid%fm         ,FHH=grid%fh                                      &
      &        ,FLQC=grid%flqc          ,GLW=grid%glw            ,GRDFLX=grid%grdflx      &
      &        ,GSW=grid%gsw    ,SWDOWN=grid%swdown        ,GZ1OZ0=gz1oz0      ,HFX=grid%hfx              &
+
+!++yun note: added by LUCY, start
+     &        ,AH_istart=grid%i_start(1)                 ,AH_jstart=grid%j_start(1)       & !AH_istart is a scalar, grid%i_start is an array
+     &        ,AH_iend=grid%i_end(1)                     ,AH_jend=grid%j_end(1)           &
+!     &        ,AH_istart=grid%i_start                 ,AH_jstart=grid%j_start       & !original from LUCY, but can't compile
+!     &        ,AH_iend=grid%i_end                     ,AH_jend=grid%j_end           & !original from LUCY, but can't compile
+     &        ,AH_grid=grid%id                        ,AHFLUX=grid%AHFLUX           & 
+!--yun note: added by LUCY, end
+
      &        ,HT=grid%ht              ,IFSNOW=config_flags%ifsnow      ,ISFFLX=config_flags%isfflx      &
      &        ,FRACTIONAL_SEAICE=config_flags%fractional_seaice           &
      &        ,SEAICE_ALBEDO_OPT=config_flags%seaice_albedo_opt           &

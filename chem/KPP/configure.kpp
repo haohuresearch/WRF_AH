@@ -1,0 +1,46 @@
+#
+# This file was automatically written by the configure_kpp script
+#  MANUAL CHANGES WILL BE LOST !
+#
+# this file is in parts based on the original Makefile.defs from KPP
+
+
+
+OMPCC           =       # -fopenmp
+CCOMP           =       gcc
+DM_CC           =       mpicc 
+CC              =       $(DM_CC) -DFSEEKO64_OK 
+FCCOMPAT        =        -fallow-argument-mismatch -fallow-invalid-boz
+FCBASEOPTS_NO_G =       -w $(FORMAT_FREE) $(BYTESWAPIO) $(FCCOMPAT)
+DESCRIPTION     =       GNU ($SFC/$SCC)
+SCC             =       gcc
+CC_TOOLS        =      $(SCC) 
+          CC="$(SCC)" CFLAGS="$(CFLAGS)" NETCDF4_DEP_LIB="$(NETCDF4_DEP_LIB)" \
+
+
+# Uncomment or set your path to yacc in your environment
+#  YACC=yacc -d 
+
+
+#    The name of your lexical analizer. KPP requires FLEX to be used.
+#    FLEX is a public domain lexical analizer and you can download it from
+#    http://www.gnu.org/software/flex/ or any other mirror site. If flex
+#    directory is not included in your path use the complete pathname.
+
+
+FLEX=flex
+
+
+#    The complete pathname of the FLEX library (libfl.a).
+#    On many systems this is: /usr/local/util/lib/flex
+FLEX_LIB_DIR = /spack/2206/apps/linux-centos7-x86_64_v3/gcc-11.3.0/flex-2.6.4-gzb4ekt/lib 
+
+
+
+
+
+
+CC_FLAGS=-O0
+
+##############################################################################
+

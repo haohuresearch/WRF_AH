@@ -131,7 +131,7 @@ TS_SCHEME: 1
 #      (sf_urban_physics=1)
 #
 
-AHOPTION: 0
+AHOPTION: 1
 
 #
 # Anthropogenic Heating diurnal profile.
